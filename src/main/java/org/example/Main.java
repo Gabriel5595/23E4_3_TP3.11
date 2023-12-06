@@ -1,19 +1,47 @@
 package org.example;
 
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class Main {
     public static void main(String[] args) {
-        // Press Alt+Enter with your caret at the highlighted text to see how
-        // IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        try {
+            // URL da API
+            URL url = new URL("https://jsonplaceholder.typicode.com/posts");
 
-        // Press Shift+F10 or click the green arrow button in the gutter to run the code.
-        for (int i = 1; i <= 5; i++) {
+            // Abrindo a conexão
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-            // Press Shift+F9 to start debugging your code. We have set one breakpoint
-            // for you, but you can always add more by pressing Ctrl+F8.
-            System.out.println("i = " + i);
+            // Configurando a conexão para o método POST
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
+
+            // Criando um objeto User com os dados
+            User user = new User(1, 1, "delectus aut autem", false);
+
+            // Usando ObjectMapper para converter o objeto User em JSON
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonInputString = objectMapper.writeValueAsString(user);
+
+            // Obtendo o stream de saída da conexão para enviar o JSON
+            try (OutputStream out = connection.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes("utf-8");
+                out.write(input, 0, input.length);
+            }
+
+            // Obtendo a resposta da requisição
+            int responseCode = connection.getResponseCode();
+            System.out.println("Código de resposta: " + responseCode);
+
+            // Fechando a conexão
+            connection.disconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
